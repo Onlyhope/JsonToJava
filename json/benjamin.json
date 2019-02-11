@@ -1,0 +1,15 @@
+{
+	"person": {
+		"name": "Benjamin Lee",
+		"age": 26,
+		"hobbies": ["Basketball", "Technology", "Gaming"]
+	},
+	"metaInformation": {
+		"source": "aaron",
+		"date": "2019-02-11T01:34:42.673Z",
+		"error": {
+			"type" : "success",
+			"description": null
+		}
+	}
+}
