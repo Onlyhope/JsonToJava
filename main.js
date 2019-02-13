@@ -60,7 +60,8 @@ const convertJsonObject = (obj, className) => {
 	Object.keys(obj).forEach((key) => {
 
 		if (obj[key] instanceof Array) {
-
+			// TODO 
+			convertJsonArray(obj[key], key);
 		} else if (typeof obj[key] == 'object') {
 			convertJsonObject(obj[key], key); 
 		}
@@ -77,7 +78,7 @@ const convertJsonObject = (obj, className) => {
 
 }
 
-const convertArrayElementToJava = (element, arrName) => {
+const convertJsonArray = (element, arrName) => {
 
 	if (element instanceof Array) {
 		element.forEach(e => convertArrayElementToJava(e, arrName));
