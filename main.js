@@ -1,5 +1,6 @@
-let fs = require('fs');
-let path = require('path');
+const fs = require('fs');
+const path = require('path');
+const javaConverter = require('./javaConverter.js')
 
 const dirName = __dirname + '/json';
 
@@ -16,7 +17,7 @@ fs.readdir(dirName, (err, fileNames) => {
 
 		readFile('/' + fileToRead)
 		.then((result) => {
-			convertToJava(result);
+			convertToJava(result, fileName);
 		})
 		.catch(err => console.log(err));
 	});
@@ -33,9 +34,27 @@ const readFile = (file) => {
 			}
 		})
 	});
+	
 }
 
-const convertToJava = (obj) => {
+const writeFile = (className, data) => {
+
+	let fileName = className + '.java';
+
+	return new Promise((resolve, reject) => {
+		fs.writeFile(fileName, data, (err) => {
+			if (err) {
+				reject(err);
+			} else {
+				console.log('Data written to fileName\n' + data);
+				resolve();
+			}
+		})
+	});
+
+}
+
+const convertToJava = (obj, className) => {
 
 	Object.keys(obj).forEach((key) => {
 
@@ -59,7 +78,8 @@ const convertArrayElementToJava = (element, arrName) => {
 	if (element instanceof Array) {
 		element.forEach(e => convertArrayElementToJava(e, arrName));
 	} else if (typeof element == 'object') {
-		convertToJava(element);
+		convertToJava(element, arrName);
 	}
 
 }
+
