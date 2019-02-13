@@ -1,6 +1,5 @@
 const fs = require('fs');
-const path = require('path');
-const javaConverter = require('./javaConverter.js')
+const javaConverter = require('./lib/javaConverter.js')
 
 const dirName = __dirname + '/json';
 
@@ -17,7 +16,7 @@ fs.readdir(dirName, (err, fileNames) => {
 
 		readFile('/' + fileToRead)
 		.then((result) => {
-			convertToJava(result, fileName);
+			convertJsonObject(result, fileName);
 		})
 		.catch(err => console.log(err));
 	});
@@ -47,29 +46,34 @@ const writeFile = (className, data) => {
 				reject(err);
 			} else {
 				console.log('Data written to fileName\n' + data);
-				resolve();
+				resolve(fileName);
 			}
 		})
 	});
 
 }
 
-const convertToJava = (obj, className) => {
+const convertJsonObject = (obj, className) => {
+
+	let content = javaConverter.getClassHeader(className) + '\n';
 
 	Object.keys(obj).forEach((key) => {
 
-		if (obj[key] == null) {
-			console.log(key, 'is NULL');
-		} else if (obj[key] instanceof Array) {
-			console.log(obj[key]);
-			obj[key].forEach(e => convertArrayElementToJava(e, key));
+		if (obj[key] instanceof Array) {
+
 		} else if (typeof obj[key] == 'object') {
-			convertToJava(obj[key]);
-		} else {
-			console.log(key, typeof obj[key]);
+			convertJsonObject(obj[key], key); 
 		}
 
+		content += javaConverter.getPropertyConversion(key, obj[key]) '\n';
+
 	});
+
+	content += javaConverter.getClassFooter();
+
+	writeFile(className, content)
+	.then((content) => console.log('Wrote...\n' + content))
+	.catch((err) => console.log(err));
 
 }
 
@@ -78,7 +82,7 @@ const convertArrayElementToJava = (element, arrName) => {
 	if (element instanceof Array) {
 		element.forEach(e => convertArrayElementToJava(e, arrName));
 	} else if (typeof element == 'object') {
-		convertToJava(element, arrName);
+		convertJsonObject(element, arrName);
 	}
 
 }
