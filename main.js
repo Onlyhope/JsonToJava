@@ -60,7 +60,6 @@ const convertJsonObject = (obj, className) => {
 	Object.keys(obj).forEach((key) => {
 
 		if (obj[key] instanceof Array) {
-			// TODO 
 			convertJsonArray(obj[key], key);
 		} else if (typeof obj[key] == 'object') {
 			convertJsonObject(obj[key], key); 
@@ -78,13 +77,43 @@ const convertJsonObject = (obj, className) => {
 
 }
 
-const convertJsonArray = (element, arrName) => {
+const convertJsonArray = (array, arrName) => {
 
-	if (element instanceof Array) {
-		element.forEach(e => convertArrayElementToJava(e, arrName));
-	} else if (typeof element == 'object') {
-		convertJsonObject(element, arrName);
+	if (!Array.isArray() || array.length == 0) {
+		return;
+	}
+
+	arrName = javaConverter.formatPropertyName(arrName);
+
+	for (int i = 0; i < array.length; i++) {
+		if (getType(array[i]) == 'object') {
+			convertJsonObject(array[i], arrName + '_' + i);
+		}
 	}
 
 }
 
+const getType = getType(x) => {
+
+	let type = typeof x;
+
+	if (type == 'object') {
+		if (x instanceof Array) {
+			return 'array';
+		} else {
+			return 'object';
+		}
+	}
+
+	if (type == 'boolean') {
+		return type;
+	}
+
+	if (type == 'string') {
+		return type;
+	}
+
+	if (type == 'number') {
+		return type;
+	}
+}
