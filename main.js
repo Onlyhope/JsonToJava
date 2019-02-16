@@ -85,7 +85,7 @@ const convertJsonArray = (array, arrName) => {
 
 	arrName = javaConverter.formatPropertyName(arrName);
 
-	for (int i = 0; i < array.length; i++) {
+	for (let i = 0; i < array.length; i++) {
 		if (getType(array[i]) == 'object') {
 			convertJsonObject(array[i], arrName + '_' + i);
 		}
