@@ -3,24 +3,40 @@ const javaConverter = require('./lib/javaConverter.js')
 
 const dirName = __dirname + '/json';
 
-fs.readdir(dirName, (err, fileNames) => {
-	
-	if (err) {
-		console.log(err);
-		throw err;
-	} 
+let main = {};
 
-	fileNames.forEach((fileName) => {
-		let fileToRead = dirName + '/' + fileName;
-		console.log('Reading ... ' + fileToRead);
+main.parseDir = (dirName) => {
 
-		readFile('/' + fileToRead)
-		.then((result) => {
-			convertJsonObject(result, fileName);
-		})
-		.catch(err => console.log(err));
+	fs.readdir(dirName, (err, fileNames) => {
+		
+		if (err) {
+			console.log(err);
+			throw err;
+		} 
+
+		fileNames.forEach((fileName) => {
+			let fileToRead = dirName + '/' + fileName;
+			console.log('Reading ... ' + fileToRead);
+
+			readFile('/' + fileToRead)
+			.then((result) => {
+				main.convertJsonObject(result, fileName);
+			})
+			.catch(err => console.log(err));
+		});
 	});
-});
+
+}
+
+main.parseFile = (fileUri) => {
+
+	readFile(fileUri)
+	.then((result) => {
+		main.convertJsonObject(result, fileUri);
+	})
+	.catch(err => console.log(err));
+
+}
 
 const readFile = (file) => {
 
@@ -31,14 +47,14 @@ const readFile = (file) => {
 			} else {
 				resolve(JSON.parse(data));
 			}
-		})
+		});
 	});
 	
 }
 
-const writeFile = (className, data) => {
+const writeFile = (fileUri, data) => {
 
-	let fileName = className + '.java';
+	let fileName = fileUri.replace(".json", ".java");
 
 	return new Promise((resolve, reject) => {
 		fs.writeFile(fileName, data, (err) => {
@@ -53,31 +69,40 @@ const writeFile = (className, data) => {
 
 }
 
-const convertJsonObject = (obj, className) => {
+const getClassName = (fileUri) => {
+	let fileName = fileUri;
+	fileName = fileUri.substr(fileUri.lastIndexOf('/') + 1).replace('.json', '');
+	fileName = fileName.charAt(0).toUpperCase() + fileName.substr(1);
+	return fileName;
+}
 
+main.convertJsonObject = (obj, fileUri) => {
+
+	let className = getClassName(fileUri);
+	console.log('Classname', className);
 	let content = javaConverter.getClassHeader(className) + '\n';
 
 	Object.keys(obj).forEach((key) => {
 
 		if (obj[key] instanceof Array) {
-			convertJsonArray(obj[key], key);
+			main.convertJsonArray(obj[key], key);
 		} else if (typeof obj[key] == 'object') {
-			convertJsonObject(obj[key], key); 
+			main.convertJsonObject(obj[key], key); 
 		}
 
-		content += javaConverter.getPropertyConversion(key, obj[key]) '\n';
+		content += javaConverter.getPropertyConversion(key, obj[key]) + '\n';
 
 	});
 
 	content += javaConverter.getClassFooter();
 
-	writeFile(className, content)
+	writeFile(fileUri, content)
 	.then((content) => console.log('Wrote...\n' + content))
 	.catch((err) => console.log(err));
 
 }
 
-const convertJsonArray = (array, arrName) => {
+main.convertJsonArray = (array, arrName) => {
 
 	if (!Array.isArray() || array.length == 0) {
 		return;
@@ -86,14 +111,14 @@ const convertJsonArray = (array, arrName) => {
 	arrName = javaConverter.formatPropertyName(arrName);
 
 	for (let i = 0; i < array.length; i++) {
-		if (getType(array[i]) == 'object') {
-			convertJsonObject(array[i], arrName + '_' + i);
+		if (main.getType(array[i]) == 'object') {
+			main.convertJsonObject(array[i], arrName + '_' + i);
 		}
 	}
 
 }
 
-const getType = getType(x) => {
+main.getType = (x)=> {
 
 	let type = typeof x;
 
@@ -117,3 +142,5 @@ const getType = getType(x) => {
 		return type;
 	}
 }
+
+module.exports = main;

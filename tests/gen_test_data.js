@@ -18,13 +18,29 @@ father.hobbies = ['Fishing', 'Hunting']
 
 let family = {}
 
-family.primary = primary;
-family.mother = mother;
-family.father = father;
+// family.primary = primary;
+// family.mother = mother;
+// family.father = father;
 family.size = 3;
 family.livingSpace = 'House'
+family.income = 143914.94
+family.alive = true
+
+const dirName = __dirname + '/data';
+
+const fs = require('fs');
+
+fs.writeFile(dirName + '/family.json', JSON.stringify(family), (err) => {
+	if (err) {
+		throw err;
+	}
+
+	console.log('success');
+});
+
 
 console.log(family);
 
+module.exports = family;
 
 
